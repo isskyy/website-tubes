@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Checkout</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
+
+  <body class="bg-light">
+    <div class="container mt-5">
+      <h1 class="mb-4 text-center">Checkout Summary</h1>
+      <div id="checkout-summary" class="card p-4 shadow-sm">
+        <h2 class="card-title">Detail Pembelian</h2>
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th scope="col">Nama Barang</th>
+                <th scope="col">Harga</th>
+                <th scope="col">Kuantitas</th>
+                <th scope="col">Total</th>
+              </tr>
+            </thead>
+            <tbody id="items-table">
+              <!-- Daftar barang akan ditambahkan di sini -->
+            </tbody>
+          </table>
+        </div>
+        <h3 class="mt-4">Total Harga: Rp. <span id="total-price"></span></h3>
+        <button id="selesai-checkout-btn" class="btn btn-primary mt-3">
+          Selesai Checkout
+        </button>
+      </div>
+    </div>
+
+    <script>
+      // Mengambil data total harga dan item dari URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const totalPrice = urlParams.get("total");
+      const items = JSON.parse(urlParams.get("items"));
+
+      // Menampilkan total harga
+      document.getElementById("total-price").textContent = totalPrice;
+
+      // Menampilkan daftar barang dalam tabel
+      const itemsTable = document.getElementById("items-table");
+      items.forEach((item) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${item.nama}</td>
+          <td>Rp. ${item.harga}</td>
+          <td>${item.qty}</td>
+          <td>Rp. ${item.harga * item.qty}</td>
+        `;
+        itemsTable.appendChild(row);
+      });
+
+      document
+        .getElementById("selesai-checkout-btn")
+        .addEventListener("click", function () {
+          // Membuat permintaan POST ke server untuk menyimpan data ke database
+          fetch("simpan_checkout.php", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              total: totalPrice,
+              items: items,
+            }),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.success) {
+                window.location.href = "kasir.html";
+              } else {
+                alert("Gagal menyimpan data. Silakan coba lagi.");
+              }
+            })
+            .catch((error) => console.error("Error:", error));
+        });
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>
